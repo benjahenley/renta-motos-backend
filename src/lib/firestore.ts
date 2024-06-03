@@ -15,12 +15,11 @@ const firebaseConfig = {
   universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN,
 };
 
-// const serviceAccount = JSON.parse(firebaseConfig);
-
 if (admin.apps.length == 0) {
   admin.initializeApp({
-    credential: admin.credential.cert(firebaseConfig as any),
+    credential: admin.credential.cert(firebaseConfig as admin.ServiceAccount),
   });
 }
 
 export const firestore = admin.firestore();
+export const authenticate = admin.auth();

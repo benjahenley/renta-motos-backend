@@ -1,4 +1,7 @@
+import { getOneHourExpirationDate } from "@/helpers/getDate";
 import { firestore } from "../lib/firestore";
+import { OrderProps } from "@/interfaces/order";
+import { User } from "./user";
 
 type Estado = "pago" | "pendiente";
 
@@ -21,39 +24,34 @@ export class Order {
   async push() {
     this.ref.update(this.data);
   }
+
   static async createNewOrder(data: any) {
     const newOrderSnap = await collection.add(data);
-    const order = await new Order(newOrderSnap.id);
-    order.data = data;
+    const order = new Order(newOrderSnap.id);
+    order.pull();
+
     return order;
   }
 
-  async addInitPoint(initPoint: string) {
-    const updated = await this.ref.update({ initPoint });
-    this.initPoint = initPoint;
-    return true;
-  }
+  static async createOrderWithReservations({
+    userId,
+    reservationIds,
+    price,
+    adults,
+    expirationDate,
+  }: OrderProps) {
+    const orderObject = {
+      reservations: reservationIds,
+      price,
+      adults,
+      userId,
+      expirationDate,
+      status: "pending",
+    };
 
-  async confirmPayment(orderId: any) {
-    this.state = "pago";
-    await this.ref.update({ state: "pago" });
-    return true;
-  }
+    const orderRef = await collection.add(orderObject);
+    await User.appendOrder(orderRef.id, userId);
 
-  async getDbOrder(id: string) {
-    const order = await collection.doc(id);
-  }
-
-  static async getAll(id: string) {
-    let hits: Array<any> = [];
-
-    const orders = await collection.where("userId", "==", id);
-    const orderData = await orders.get();
-
-    orderData.forEach((doc) => {
-      hits.push(doc.data());
-    });
-
-    return hits;
+    return orderRef.id;
   }
 }
