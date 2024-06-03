@@ -13,6 +13,7 @@
 /.next/
 /out/
 
+
 functions
 
 # production
@@ -32,6 +33,9 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+.firebaserc
+firebase.json
 
 # typescript
 *.tsbuildinfo
