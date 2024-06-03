@@ -19,7 +19,9 @@ export const onReservationDelete = functions.firestore
         reservations: admin.firestore.FieldValue.arrayRemove(reservationId),
       });
 
-      console.log(`Reservation ${reservationId} removed from User ${userId}`);
+      console.log(
+        "Reservation " + { reservationId } + "removed from User " + "{userId}"
+      );
 
       const ordersSnapshot = await firestore
         .collection("orders")
@@ -33,7 +35,10 @@ export const onReservationDelete = functions.firestore
         });
 
         console.log(
-          `Reservation ${reservationId} removed from Order ${orderRef.id}`
+          "Reservation " +
+            { reservationId } +
+            "removed from Order " +
+            "{orderRef.id}"
         );
       } else {
         console.warn(`No order found containing Reservation ${reservationId}`);
@@ -53,7 +58,7 @@ const getOneWeekAgoDate = (): Date => {
 // Function to delete old reservations
 export const deleteOldReservations = functions.pubsub
   .schedule("every 24 hours")
-  .onRun(async (context) => {
+  .onRun(async () => {
     const oneWeekAgo = getOneWeekAgoDate();
 
     try {
@@ -102,7 +107,7 @@ export const deleteOldReservations = functions.pubsub
 
       console.log("Old reservations deleted successfully");
     } catch (error) {
-      console.error("Error deleting old reservations:", error);
+      console.error("Error deleting old reservations: ", error);
     }
 
     return null;
