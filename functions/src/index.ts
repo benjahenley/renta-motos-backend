@@ -1,4 +1,3 @@
-import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
@@ -20,7 +19,7 @@ export const onReservationDelete = functions.firestore
         reservations: admin.firestore.FieldValue.arrayRemove(reservationId),
       });
 
-      logger.log(`Reservation ${reservationId} removed from User ${userId}`);
+      console.log(`Reservation ${reservationId} removed from User ${userId}`);
 
       const ordersSnapshot = await firestore
         .collection("orders")
@@ -33,14 +32,14 @@ export const onReservationDelete = functions.firestore
           reservations: admin.firestore.FieldValue.arrayRemove(reservationId),
         });
 
-        logger.log(
+        console.log(
           `Reservation ${reservationId} removed from Order ${orderRef.id}`
         );
       } else {
-        logger.warn(`No order found containing Reservation ${reservationId}`);
+        console.warn(`No order found containing Reservation ${reservationId}`);
       }
     } catch (error) {
-      logger.error("Error removing reservation from User document:", error);
+      console.error("Error removing reservation from User document:", error);
     }
   });
 
@@ -64,7 +63,7 @@ export const deleteOldReservations = functions.pubsub
         .get();
 
       if (snapshot.empty) {
-        logger.log("No reservations to delete");
+        console.log("No reservations to delete");
         return null;
       }
 
@@ -101,9 +100,9 @@ export const deleteOldReservations = functions.pubsub
 
       await batch.commit();
 
-      logger.log("Old reservations deleted successfully");
+      console.log("Old reservations deleted successfully");
     } catch (error) {
-      logger.error("Error deleting old reservations:", error);
+      console.error("Error deleting old reservations:", error);
     }
 
     return null;
@@ -111,6 +110,6 @@ export const deleteOldReservations = functions.pubsub
 
 // Example of an HTTP function, if you have any
 export const helloWorld = functions.https.onRequest((req, res) => {
-  logger.info("Hello logs!", { structuredData: true });
+  console.info("Hello logs!", { structuredData: true });
   res.send("Hello from Firebase!");
 });
