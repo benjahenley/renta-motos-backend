@@ -1,12 +1,8 @@
-import { UserRole } from "@/interfaces/user";
-import { authenticate, firestore } from "../lib/firestore";
-import { sendVerificationLink } from "@/controllers/auth";
+
+import { firestore } from "../lib/firestore";
+
 import { User } from "./user";
-import {
-  ReservationData,
-  ReservationInputData,
-  ReservationItem,
-} from "@/interfaces/reservation";
+import {ReservationInputData} from "@/interfaces/reservation";
 import { Jetski } from "./jetski";
 
 const collection = firestore.collection("reservas");
@@ -105,16 +101,22 @@ export class Reservation {
   }
 
   static async getAll() {
-    const reservations = await collection.get();
+    const snapshot = await collection.get();
 
-    var data: object[] = [];
+    if (snapshot.empty) {
+      console.log('No matching documents.');
+      return [];
+    }
 
-    reservations.docs.forEach((datum) => {
-      data.push(datum.data());
-      return;
+    const reservations = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id, 
+        ...data
+      };
     });
 
-    return data;
+    return reservations;
   }
   static async removeReservation(reservationId: string) {
     try {

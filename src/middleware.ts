@@ -1,31 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:3001"];
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": allowedOrigins[0],
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-export function middleware(request: NextRequest) {
+export function middleware(request: Request) {
   const origin = request.headers.get("origin");
-
-  if (
-    request.method === "OPTIONS" &&
-    origin &&
-    allowedOrigins.includes(origin)
-  ) {
-    return NextResponse.next({
-      headers: corsHeaders,
-    });
-  }
+  const allowedOrigins = ["http://localhost:3000"];
 
   const response = NextResponse.next();
+
   if (origin && allowedOrigins.includes(origin)) {
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      response.headers.set(key, value);
-    });
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Methods", "GET,OPTIONS");
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "Authorization, Content-Type"
+    );
+  }
+
+  if (request.method === "OPTIONS") {
+    return response;
   }
 
   return response;
