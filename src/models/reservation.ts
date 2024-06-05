@@ -1,8 +1,7 @@
-
 import { firestore } from "../lib/firestore";
 
 import { User } from "./user";
-import {ReservationInputData} from "@/interfaces/reservation";
+import { ReservationInputData } from "@/interfaces/reservation";
 import { Jetski } from "./jetski";
 
 const collection = firestore.collection("reservas");
@@ -24,33 +23,46 @@ export class Reservation {
   }
 
   static async checkForOverlaps(data: ReservationInputData) {
-    for (const reservation of data.reservations) {
-      const dateOverlaps = collection
-        .where("date", "==", reservation.date)
-        .where("jetskiId", "==", reservation.jetskiId);
+    try {
+      for (const reservation of data.reservations) {
+        const jetskiExists = await Jetski.checkIfExists(reservation.jetskiId);
 
-      const dateOverlapsSnap = await dateOverlaps.get();
+        if (!jetskiExists) {
+          throw new Error(
+            `Jetski with ID ${reservation.jetskiId} does not exist`
+          );
+        }
 
-      if (!dateOverlapsSnap.empty) {
-        for (const doc of dateOverlapsSnap.docs) {
-          const existingReservation = doc.data();
+        const overlaps = await collection
+          .where("date", "==", reservation.date)
+          .where("jetskiId", "==", reservation.jetskiId)
+          .get();
 
-          const newStart = new Date(reservation.startTime).getTime();
-          const newEnd = new Date(reservation.endTime).getTime();
-          const existingStart = new Date(
-            existingReservation.startTime
-          ).getTime();
-          const existingEnd = new Date(existingReservation.endTime).getTime();
+        if (!overlaps.empty) {
+          overlaps.docs.forEach((doc) => {
+            const existing = doc.data();
+            const newStart = new Date(reservation.startTime).getTime();
+            const newEnd = new Date(reservation.endTime).getTime();
+            const existingStart = new Date(existing.startTime).getTime();
+            const existingEnd = new Date(existing.endTime).getTime();
 
-          if (newStart < existingEnd && newEnd > existingStart) {
-            throw new Error(
-              "Reservation time overlaps with an existing reservation on this jetski"
-            );
-          }
+            if (newStart < existingEnd && newEnd > existingStart) {
+              throw new Error(
+                `Reservation time overlaps with an existing reservation on jetski ${reservation.jetskiId}`
+              );
+            }
+          });
         }
       }
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        console.error(`Error checking for overlaps: ${e.message}`);
+        throw e;
+      } else {
+        console.error("Unknown error occurred during overlap check");
+        throw new Error("Unknown error occurred during overlap check");
+      }
     }
-    return;
   }
 
   static async createReservations(reservationData: ReservationInputData) {
@@ -80,6 +92,7 @@ export class Reservation {
     await batch.commit();
 
     await Promise.all(jetskiPromises);
+
     await User.addReservations(reservationData.userId, reservationIds);
 
     console.log("Successfully added reservations!", reservationIds);
@@ -87,10 +100,20 @@ export class Reservation {
     return reservationIds;
   }
 
+  static async changeReservationsToApproved(reservationIds: string[]) {
+    const batch = firestore.batch();
+
+    for (const reservationId of reservationIds) {
+      const reservationRef = collection.doc(reservationId);
+      batch.update(reservationRef, { status: "approved" });
+    }
+
+    await batch.commit();
+  }
+
   static async getByDate(date: string) {
     const reservations = collection.where("date", "==", date);
     const reservationData = await reservations.get();
-    console.log(reservationData.docs);
 
     const items = reservationData.docs.map((doc) => ({
       id: doc.id,
@@ -104,15 +127,15 @@ export class Reservation {
     const snapshot = await collection.get();
 
     if (snapshot.empty) {
-      console.log('No matching documents.');
+      console.log("No matching documents.");
       return [];
     }
 
-    const reservations = snapshot.docs.map(doc => {
+    const reservations = snapshot.docs.map((doc) => {
       const data = doc.data();
       return {
-        id: doc.id, 
-        ...data
+        id: doc.id,
+        ...data,
       };
     });
 

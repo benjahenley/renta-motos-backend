@@ -7,9 +7,7 @@ import { User } from "@/models/user";
 export async function createReservations(data: ReservationInputData) {
   try {
     await Reservation.checkForOverlaps(data);
-
     const reservationIds = await Reservation.createReservations(data);
-
     return reservationIds;
   } catch (e: unknown) {
     throw new Error((e as Error).message);

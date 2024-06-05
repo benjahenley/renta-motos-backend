@@ -30,10 +30,23 @@ export class Jetski {
     return items;
   }
 
-  static async findJetski() {}
+  static async checkIfExists(jetskiId: string) {
+    const jetskisSnap = await collection.doc(jetskiId).get();
+
+    if (!jetskisSnap.exists) {
+      throw new Error(
+        `Jetski with id ${jetskiId} does not exist on the database`
+      );
+    }
+
+    return true;
+  }
 
   static async addReservation(reservation: any) {
     const jetskiRef = collection.doc(reservation.data.jetskiId);
+    if (!jetskiRef) {
+      throw new Error("there is no Jetski with that ID");
+    }
 
     const jetski = new Jetski(jetskiRef.id);
     await jetski.pull();

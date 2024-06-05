@@ -28,9 +28,30 @@ export class Order {
   static async createNewOrder(data: any) {
     const newOrderSnap = await collection.add(data);
     const order = new Order(newOrderSnap.id);
-    order.pull();
+    await order.pull();
 
     return order;
+  }
+
+  static async changeStatusToApproved(orderId: string, userId: string) {
+    const newOrderSnap = collection.doc(orderId);
+    const orderSnap = await newOrderSnap.get();
+
+    if (!orderSnap.exists) {
+      throw new Error(`Order with id ${orderId} does not exist}`);
+    }
+
+    const order = new Order(newOrderSnap.id);
+    await order.pull();
+
+    if (order.data.userId !== userId) {
+      throw new Error("User is not allowed to access this order");
+    }
+
+    order.data.status = "approved";
+    await order.push();
+
+    return order.data.reservations;
   }
 
   static async createOrderWithReservations({

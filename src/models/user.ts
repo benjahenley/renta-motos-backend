@@ -1,6 +1,5 @@
 import { UserRole } from "@/interfaces/user";
 import { authenticate, firestore } from "../lib/firestore";
-import { sendVerificationLink } from "@/controllers/auth";
 
 const collection = firestore.collection("users");
 
@@ -35,7 +34,6 @@ export class User {
     const snapshot = await userRef.get();
     const data = snapshot.docs[0].data();
     const fullName = `${data.firstName} ${data.lastName}`;
-    console.log(fullName);
 
     return fullName;
   }

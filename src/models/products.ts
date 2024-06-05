@@ -27,7 +27,6 @@ export class Product {
 
   static async checkProduct(productId: string) {
     const productSnap: any = await index.getObject(productId);
-    // console.log(productSnap.fields);
     if (productSnap) {
       return productSnap;
     } else {
