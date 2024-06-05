@@ -14,6 +14,12 @@ export async function getOrderById(orderId: string) {
   return order.data;
 }
 
+export async function getUserOrders(uid: string) {
+  const orders = await Order.findUserOrders(uid);
+
+  return orders;
+}
+
 export async function updateOrderAndReservations(
   orderId: string,
   userId: string

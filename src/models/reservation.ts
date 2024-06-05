@@ -111,6 +111,23 @@ export class Reservation {
     await batch.commit();
   }
 
+  static async findReservations(reservationIds: string[]) {
+    try {
+      var reservations: object[] = [];
+
+      for (const reservationId of reservationIds) {
+        const reservationData = await collection.doc(reservationId).get();
+        const data = reservationData!.data();
+
+        reservations.push(data!);
+      }
+
+      return reservations;
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }
+
   static async getByDate(date: string) {
     const reservations = collection.where("date", "==", date);
     const reservationData = await reservations.get();

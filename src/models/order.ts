@@ -2,6 +2,7 @@ import { getOneHourExpirationDate } from "@/helpers/getDate";
 import { firestore } from "../lib/firestore";
 import { OrderProps } from "@/interfaces/order";
 import { User } from "./user";
+import { Reservation } from "./reservation";
 
 type Estado = "pago" | "pendiente";
 
@@ -31,6 +32,22 @@ export class Order {
     await order.pull();
 
     return order;
+  }
+
+  static async findUserOrders(uid: string) {
+    const ordersRef = await collection.where("userId", "==", uid).get();
+    const orderData = [];
+
+    for (const doc of ordersRef.docs) {
+      const data = doc.data();
+      const reservations = data.reservations;
+      const reservationsData = await Reservation.findReservations(reservations);
+      data.reservations = reservationsData;
+
+      orderData.push(data);
+    }
+
+    return orderData;
   }
 
   static async changeStatusToApproved(orderId: string, userId: string) {
