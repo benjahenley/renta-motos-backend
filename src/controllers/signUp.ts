@@ -1,5 +1,4 @@
 import { User } from "@/models/user";
-import { Auth } from "@/models/auth";
 import { UserRole } from "@/interfaces/user";
 
 type Props = {
