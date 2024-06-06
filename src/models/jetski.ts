@@ -21,7 +21,7 @@ export class Jetski {
   }
 
   static async getJetskis() {
-    const jetskisSnap = await collection.get();
+    const jetskisSnap = await collection.where("available", "==", true).get();
     const items = jetskisSnap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -40,6 +40,37 @@ export class Jetski {
     }
 
     return true;
+  }
+
+  static async toggleAvailable(jetskiId: string) {
+    try {
+      const jetskiRef = collection.doc(jetskiId);
+      const jetskiDoc = await jetskiRef.get();
+
+      if (!jetskiDoc.exists) {
+        throw new Error(`Jetski with ID ${jetskiId} does not exist`);
+      }
+
+      const jetskiData = jetskiDoc.data();
+      const currentAvailability = jetskiData!.available;
+
+      const updatedAvailability = !currentAvailability;
+
+      await jetskiRef.update({ available: updatedAvailability });
+
+      const jetskiInstance = new Jetski(jetskiId);
+      await jetskiInstance.pull();
+      jetskiInstance.data.available = updatedAvailability;
+      await jetskiInstance.push();
+
+      return jetskiInstance.data;
+    } catch (error: any) {
+      console.error(
+        `Error toggling availability for jetski ${jetskiId}:`,
+        error
+      );
+      throw new Error(`Failed to toggle availability: ${error.message}`);
+    }
   }
 
   static async addReservation(reservation: any) {

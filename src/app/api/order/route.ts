@@ -1,4 +1,8 @@
-import { createOrder, updateOrderAndReservations } from "@/controllers/order";
+import {
+  createOrder,
+  getOrderById,
+  updateOrderAndReservations,
+} from "@/controllers/order";
 import { createReservations } from "@/controllers/reservation";
 import { getOneHourExpirationDate } from "@/helpers/getDate";
 import { authenticateToken } from "@/middlewares/token";
@@ -21,18 +25,27 @@ function handleError(e: unknown) {
 export async function POST(request: NextRequest) {
   try {
     const userId = await authenticateToken(request);
-    const { reservations, price, adults } =
-      await mainReservationSchema.validate(await request.json(), {
+    const { reservations, adults } = await mainReservationSchema.validate(
+      await request.json(),
+      {
         abortEarly: false,
-      });
+      }
+    );
 
     const expirationDate = getOneHourExpirationDate();
+    console.log("hola");
 
-    const reservationIds = await createReservations({ userId, reservations });
+    const { reservationIds, price } = await createReservations({
+      userId,
+      reservations,
+    });
+
+    console.log(reservationIds, price);
+
     const orderId = await createOrder({
       userId,
-      reservationIds,
       price,
+      reservationIds,
       adults,
       expirationDate,
     });
@@ -54,6 +67,22 @@ export async function PATCH(request: NextRequest) {
     const order = await updateOrderAndReservations(orderId, userId);
 
     return NextResponse.json({ message: "Success! Order has been approved" });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    await authenticateToken(req);
+
+    const { searchParams } = new URL(req.url);
+    const orderId = searchParams.get("orderId");
+    console.log(orderId);
+
+    const order = await getOrderById(orderId!);
+
+    return NextResponse.json({ order });
   } catch (e: unknown) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }

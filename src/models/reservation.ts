@@ -3,6 +3,7 @@ import { firestore } from "../lib/firestore";
 import { User } from "./user";
 import { ReservationInputData } from "@/interfaces/reservation";
 import { Jetski } from "./jetski";
+import { getPrice } from "@/helpers/getPrice";
 
 const collection = firestore.collection("reservas");
 
@@ -70,9 +71,12 @@ export class Reservation {
     const reservationIds: string[] = [];
     const jetskiPromises = [];
 
+    const price = getPrice(reservationData.reservations);
+
     for (const reservation of reservationData.reservations) {
       const newReservationRef = collection.doc();
       const reservationInstance = new Reservation(newReservationRef.id);
+
       const name = await User.getFullName(reservationData.userId);
 
       reservationInstance.data = {
@@ -97,7 +101,7 @@ export class Reservation {
 
     console.log("Successfully added reservations!", reservationIds);
 
-    return reservationIds;
+    return { reservationIds, price };
   }
 
   static async changeReservationsToApproved(reservationIds: string[]) {

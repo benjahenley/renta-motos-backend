@@ -10,6 +10,5 @@ export interface FirestoreOrderAttributes {
   userId: string;
   reservations: string[];
   adults: number;
-  price: number;
   expirationDate: string;
 }

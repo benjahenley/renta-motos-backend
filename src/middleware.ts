@@ -15,6 +15,8 @@ export function middleware(request: Request) {
     );
   }
 
+  console.log("Middleware activated");
+
   if (request.method === "OPTIONS") {
     return response;
   }

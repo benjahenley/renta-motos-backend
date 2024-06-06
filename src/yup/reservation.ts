@@ -126,11 +126,25 @@ const reservationSchema = yup.object().shape({
   jetskiId: yup.string().required(),
 });
 
-export const mainReservationSchema = yup.object({
-  reservations: yup.array().of(reservationSchema).required(),
-  adults: yup.number().required(),
-  price: yup.number().required(),
-});
+export const mainReservationSchema = yup
+  .object({
+    reservations: yup.array().of(reservationSchema).required(),
+    adults: yup.number().required(),
+  })
+  .test(
+    "adults-match-reservations",
+    "The number of adults must match the number of reservations",
+    function (value) {
+      const { reservations, adults } = value;
+      if (reservations.length !== adults) {
+        return this.createError({
+          path: "adults",
+          message: "The number of adults must match the number of reservations",
+        });
+      }
+      return true;
+    }
+  );
 
 export const reservationsByDateSchema = yup.object({
   date: yup.string().required().notInPast("Date cannot be in the past"),

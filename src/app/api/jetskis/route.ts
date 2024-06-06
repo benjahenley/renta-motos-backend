@@ -1,7 +1,7 @@
 import { getAllJetskis } from "@/controllers/jetskis";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const jetskis = await getAllJetskis();
     return NextResponse.json({ jetskis });
