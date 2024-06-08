@@ -8,14 +8,15 @@ export function middleware(request: Request) {
 
   if (origin && allowedOrigins.includes(origin)) {
     response.headers.set("Access-Control-Allow-Origin", origin);
-    response.headers.set("Access-Control-Allow-Methods", "GET,OPTIONS");
+    response.headers.set(
+      "Access-Control-Allow-Methods",
+      "GET,OPTIONS,PATCH,POST"
+    );
     response.headers.set(
       "Access-Control-Allow-Headers",
       "Authorization, Content-Type"
     );
   }
-
-  console.log("Middleware activated");
 
   if (request.method === "OPTIONS") {
     return response;

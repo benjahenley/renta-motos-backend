@@ -71,6 +71,38 @@ export class Order {
     return order.data.reservations;
   }
 
+  static async updateTransactionId(
+    orderId: string,
+    userUid: string,
+    transactionId: string
+  ) {
+    const newOrderSnap = collection.doc(orderId);
+    const orderSnap = await newOrderSnap.get();
+
+    if (!orderSnap.exists) {
+      throw new Error(`Order with id ${orderId} does not exist}`);
+    }
+
+    const order = new Order(newOrderSnap.id);
+    await order.pull();
+
+    // if (!order.data.transactionId) {
+    //   order.data.transactionId = transactionId;
+    // }
+
+    if (order.data.userId !== userUid) {
+      throw new Error(
+        `User with id ${userUid} is not allowed to access this data}`
+      );
+    }
+
+    order.data.transactionId = transactionId;
+
+    await order.push();
+
+    return order.data;
+  }
+
   static async createOrderWithReservations({
     userId,
     reservationIds,

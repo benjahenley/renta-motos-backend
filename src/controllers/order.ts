@@ -31,3 +31,18 @@ export async function updateOrderAndReservations(
 
   return;
 }
+
+export async function updateOrderTransactionId(
+  orderId: string,
+  userUid: string,
+  transactionId: string
+) {
+  try {
+    await Order.updateTransactionId(orderId, userUid, transactionId);
+    // await Transaction
+
+    return { ok: true };
+  } catch (e: any) {
+    throw new Error(e.message);
+  }
+}

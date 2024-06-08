@@ -78,7 +78,6 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const orderId = searchParams.get("orderId");
-    console.log(orderId);
 
     const order = await getOrderById(orderId!);
 
