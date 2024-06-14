@@ -2,6 +2,7 @@ import { getReservationsByDate } from "@/controllers/reservation";
 import { reservationsByDateSchema } from "@/yup/reservation";
 import { NextRequest, NextResponse } from "next/server";
 
+//GET RESERVATIONS BY DATE
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

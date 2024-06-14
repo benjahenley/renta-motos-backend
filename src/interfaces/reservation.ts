@@ -1,22 +1,23 @@
 export type Status = "pending" | "confirmed" | "cancelled";
-
-export interface ReservationData {
+export interface ReservationInputData {
   date: string;
+  userId: string;
   startTime: string;
   endTime: string;
-  userId: string;
-  jetskiId: string;
-  status: Status;
+  adults: number;
+  excursion: boolean;
+  excursionName?: string | undefined;
   expirationDate: string;
 }
-export interface ReservationInputData {
-  userId: string;
-  reservations: ReservationItem[];
-}
-
 export interface ReservationItem {
+  userId: string;
   date: string;
   startTime: string;
   endTime: string;
-  jetskiId: string;
+  adults: number;
+  excursion: boolean;
+  excursionName?: string | undefined;
+  price: number;
+  status: Status;
+  expirationDate: string;
 }

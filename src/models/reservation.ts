@@ -4,8 +4,9 @@ import { User } from "./user";
 import { ReservationInputData } from "@/interfaces/reservation";
 import { Jetski } from "./jetski";
 import { getPrice } from "@/helpers/getPrice";
+import add30Minutes from "@/helpers/add30Minutes";
 
-const collection = firestore.collection("reservas");
+const collection = firestore.collection("reservations");
 
 export class Reservation {
   id: string;
@@ -23,96 +24,130 @@ export class Reservation {
     this.ref.update(this.data);
   }
 
-  static async checkForOverlaps(data: ReservationInputData) {
-    try {
-      for (const reservation of data.reservations) {
-        const jetskiExists = await Jetski.checkIfExists(reservation.jetskiId);
+  static async checkForOverlaps(data: ReservationInputData): Promise<boolean> {
+    const { date, startTime, endTime, excursion, excursionName, adults } = data;
 
-        if (!jetskiExists) {
+    try {
+      const availableJetskis = await Jetski.getAvailableJetskis();
+      const instances = await collection.where("date", "==", date).get();
+
+      if (instances.empty) {
+        return true;
+      }
+
+      const timeSlotsMap: { [key: string]: number } = {};
+      const guideMap: { [key: string]: Set<string> } = {};
+
+      instances.docs.forEach((doc) => {
+        const docData = doc.data();
+        const docStartTime = docData.startTime;
+        const docEndTime = docData.endTime;
+        const docExcursion = docData.excursion;
+        const docExcursionName = docData.excursionName;
+
+        // Check for jetski overlaps
+        let time = docStartTime;
+        while (time < docEndTime) {
+          if (!timeSlotsMap[time]) {
+            timeSlotsMap[time] = 0;
+          }
+          timeSlotsMap[time]++;
+          time = add30Minutes(time);
+        }
+
+        // Check for guide overlaps
+        if (excursion && docExcursion) {
+          let time = docStartTime;
+          while (time < docEndTime) {
+            if (!guideMap[time]) {
+              guideMap[time] = new Set();
+            }
+            guideMap[time].add(docExcursionName);
+            time = add30Minutes(time);
+          }
+        }
+      });
+
+      let checkTime = startTime;
+      while (checkTime < endTime) {
+        if (timeSlotsMap[checkTime] + adults > availableJetskis) {
           throw new Error(
-            `Jetski with ID ${reservation.jetskiId} does not exist`
+            `Reservation time overlaps with existing reservations, exceeding available jetskis`
           );
         }
 
-        const overlaps = await collection
-          .where("date", "==", reservation.date)
-          .where("jetskiId", "==", reservation.jetskiId)
-          .get();
-
-        if (!overlaps.empty) {
-          overlaps.docs.forEach((doc) => {
-            const existing = doc.data();
-            const newStart = new Date(reservation.startTime).getTime();
-            const newEnd = new Date(reservation.endTime).getTime();
-            const existingStart = new Date(existing.startTime).getTime();
-            const existingEnd = new Date(existing.endTime).getTime();
-
-            if (newStart < existingEnd && newEnd > existingStart) {
-              throw new Error(
-                `Reservation time overlaps with an existing reservation on jetski ${reservation.jetskiId}`
-              );
-            }
-          });
+        if (
+          excursion &&
+          guideMap[checkTime] &&
+          !guideMap[checkTime].has(excursionName!) &&
+          guideMap[checkTime].size >= 2
+        ) {
+          throw new Error(
+            `Reservation time overlaps with existing excursions, exceeding available guides`
+          );
         }
+
+        checkTime = add30Minutes(checkTime);
       }
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        console.error(`Error checking for overlaps: ${e.message}`);
-        throw e;
-      } else {
-        console.error("Unknown error occurred during overlap check");
-        throw new Error("Unknown error occurred during overlap check");
-      }
+
+      return true;
+    } catch (e: any) {
+      console.error("Error checking for overlaps:", e);
+      throw new Error(e.message);
     }
   }
 
-  static async createReservations(reservationData: ReservationInputData) {
-    const batch = firestore.batch();
-    const reservationIds: string[] = [];
-    const jetskiPromises = [];
-
-    const price = getPrice(reservationData.reservations);
-
-    for (const reservation of reservationData.reservations) {
+  static async createReservation(reservationData: ReservationInputData) {
+    try {
       const newReservationRef = collection.doc();
-      const reservationInstance = new Reservation(newReservationRef.id);
+      const userFullName = await User.getFullName(reservationData.userId);
+      const price = getPrice(reservationData);
 
-      const name = await User.getFullName(reservationData.userId);
-
-      reservationInstance.data = {
-        ...reservation,
-        userFullName: name,
-        userId: reservationData.userId,
+      const reservationDataToSave = {
+        ...reservationData,
+        price,
+        userFullName,
         status: "pending",
       };
 
-      batch.set(newReservationRef, reservationInstance.data);
+      await newReservationRef.set(reservationDataToSave);
 
-      reservationIds.push(newReservationRef.id);
-
-      jetskiPromises.push(Jetski.addReservation(reservationInstance));
+      return newReservationRef.id;
+    } catch (error) {
+      console.error("Error creating reservation:", error);
+      throw new Error("Unable to create reservation");
     }
-
-    await batch.commit();
-
-    await Promise.all(jetskiPromises);
-
-    await User.addReservations(reservationData.userId, reservationIds);
-
-    console.log("Successfully added reservations!", reservationIds);
-
-    return { reservationIds, price };
   }
 
-  static async changeReservationsToApproved(reservationIds: string[]) {
-    const batch = firestore.batch();
-
-    for (const reservationId of reservationIds) {
+  static async changeReservationsToApproved(
+    userId: string,
+    reservationId: string
+  ): Promise<boolean> {
+    try {
       const reservationRef = collection.doc(reservationId);
-      batch.update(reservationRef, { status: "approved" });
-    }
+      const reservationDoc = await reservationRef.get();
 
-    await batch.commit();
+      if (!reservationDoc.exists) {
+        throw new Error("Reservation not found");
+      }
+
+      const reservationData = reservationDoc.data();
+
+      if (!reservationData) {
+        throw new Error("Reservation is empty");
+      }
+
+      if (reservationData?.userId !== userId) {
+        throw new Error("User ID does not match");
+      }
+
+      await reservationRef.update({ status: "approved" });
+
+      return true;
+    } catch (error) {
+      console.error("Error changing reservation status to approved:", error);
+      throw new Error("Unable to change reservation status to approved");
+    }
   }
 
   static async findReservations(reservationIds: string[]) {

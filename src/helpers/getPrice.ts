@@ -5,22 +5,47 @@ interface Reservation {
   jetskiId: string;
 }
 
-export const getPrice = (reservations: Reservation[]) => {
-  let totalPrice = 0;
+export const getPrice = (reservationData: any) => {
+  const { excursion, excursionName, startTime, endTime, adults } =
+    reservationData;
+  const start = new Date(startTime).getTime();
+  const end = new Date(endTime).getTime();
+  const durationInHours = (endTime - startTime) / (1000 * 60 * 60);
 
-  reservations.forEach((reservation) => {
-    const startTime = new Date(reservation.startTime).getTime();
-    const endTime = new Date(reservation.endTime).getTime();
-    const durationInHours = (endTime - startTime) / (1000 * 60 * 60);
+  let unitPrice = 0;
 
-    if (durationInHours <= 2) {
-      totalPrice += 250;
-    } else if (durationInHours <= 4) {
-      totalPrice += 300;
-    } else {
-      totalPrice += 450;
+  if (excursion) {
+    if (excursionName === "margaritas") {
+      unitPrice = 180;
     }
-  });
+    if (excursionName === "cala-salada") {
+      unitPrice = 120;
+    }
+    if (excursionName === "cala-bassa") {
+      unitPrice = 180;
+    }
+    if (excursionName === "cala-daubarca") {
+      unitPrice = 250;
+    }
+    if (excursionName === "portixol") {
+      unitPrice = 300;
+    }
+    if (excursionName === "esvedra") {
+      unitPrice = 300;
+    }
+  } else {
+    if (durationInHours <= 2) {
+      unitPrice = 250;
+    } else if (durationInHours == 1) {
+      unitPrice = 100;
+    } else if (durationInHours <= 4) {
+      unitPrice = 300;
+    } else {
+      unitPrice = 450;
+    }
+  }
+
+  const totalPrice = unitPrice * adults;
 
   return totalPrice;
 };

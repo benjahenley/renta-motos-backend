@@ -1,9 +1,85 @@
-import { deleteReservation } from "@/controllers/reservation";
+import {
+  createReservation,
+  deleteReservation,
+  updateReservation,
+} from "@/controllers/reservation";
+import { getOneHourExpirationDate } from "@/helpers/getDate";
 import { authenticateToken } from "@/middlewares/token";
 
+import {
+  mainReservationSchema,
+  reservationUpdateSchema,
+} from "@/yup/reservation";
 import { NextRequest, NextResponse } from "next/server";
+import * as yup from "yup";
 
-export async function GET(req: NextRequest) {
+function handleError(e: any) {
+  if (e instanceof yup.ValidationError) {
+    const errors = e.inner.map((err: any) => ({
+      path: err.path,
+      message: err.message,
+    }));
+    return NextResponse.json({ errors }, { status: 400 });
+  }
+  return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+}
+
+// CREATE RESERVATION
+export async function POST(request: NextRequest) {
+  try {
+    const userId = await authenticateToken(request);
+
+    const requestData = await request.json();
+    console.log("Request Data: ", requestData);
+
+    const { adults, excursion, startTime, endTime, excursionName, date } =
+      await mainReservationSchema.validate(requestData, {
+        abortEarly: false,
+      });
+
+    const expirationDate = getOneHourExpirationDate();
+
+    const reservationId = await createReservation({
+      date,
+      userId,
+      excursion,
+      startTime,
+      endTime,
+      excursionName,
+      adults,
+      expirationDate,
+    });
+
+    return NextResponse.json({ reservationId });
+  } catch (e: unknown) {
+    return handleError(e);
+  }
+}
+
+// UPDATE RESERVATION STATUS TO APPROVED
+export async function PATCH(request: NextRequest) {
+  try {
+    const userId = await authenticateToken(request);
+
+    var { reservationId } = await reservationUpdateSchema.validate(
+      await request.json(),
+      {
+        abortEarly: false,
+      }
+    );
+
+    await updateReservation(userId, reservationId);
+
+    return NextResponse.json({
+      message: `Success! Reservation with id ${reservationId} has been approved`,
+    });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+  }
+}
+
+//DELETE RESERVATION
+export async function DELETE(req: NextRequest) {
   try {
     const uid = await authenticateToken(req);
 

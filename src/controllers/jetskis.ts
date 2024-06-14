@@ -1,7 +1,7 @@
 import { Jetski } from "@/models/jetski";
 
 export async function getAllJetskis() {
-  const jetskis = await Jetski.getJetskis();
+  const jetskis = await Jetski.getAvailableJetskis();
   return jetskis;
 }
 

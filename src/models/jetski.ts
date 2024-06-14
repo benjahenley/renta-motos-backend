@@ -1,8 +1,4 @@
 import { firestore } from "../lib/firestore";
-import {
-  ReservationData,
-  ReservationInputData,
-} from "@/interfaces/reservation";
 
 const collection = firestore.collection("jetskis");
 
@@ -20,14 +16,9 @@ export class Jetski {
     this.ref.update(this.data);
   }
 
-  static async getJetskis() {
+  static async getAvailableJetskis(): Promise<number> {
     const jetskisSnap = await collection.where("available", "==", true).get();
-    const items = jetskisSnap.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    return items;
+    return jetskisSnap.size;
   }
 
   static async checkIfExists(jetskiId: string) {
@@ -38,7 +29,6 @@ export class Jetski {
         `Jetski with id ${jetskiId} does not exist on the database`
       );
     }
-
     return true;
   }
 

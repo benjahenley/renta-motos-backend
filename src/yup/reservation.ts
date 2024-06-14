@@ -126,26 +126,36 @@ const reservationSchema = yup.object().shape({
   jetskiId: yup.string().required(),
 });
 
-export const mainReservationSchema = yup
-  .object({
-    reservations: yup.array().of(reservationSchema).required(),
-    adults: yup.number().required(),
-  })
-  .test(
-    "adults-match-reservations",
-    "The number of adults must match the number of reservations",
-    function (value) {
-      const { reservations, adults } = value;
-      if (reservations.length !== adults) {
-        return this.createError({
-          path: "adults",
-          message: "The number of adults must match the number of reservations",
-        });
-      }
-      return true;
-    }
-  );
+export const mainReservationSchema = yup.object({
+  date: yup.string().required(),
+  adults: yup.number().required(),
+  startTime: yup.string().required(),
+  endTime: yup.string().required(),
+  excursion: yup.boolean().required(),
+  excursionName: yup
+    .string()
+    .oneOf(
+      [
+        "margaritas",
+        "cala-salada",
+        "cala-bassa",
+        "cala-daubarca",
+        "portixol",
+        "esvedra",
+      ],
+      "Excursion name must be one of the predefined values"
+    )
+    .when("excursion", (excursion, schema) =>
+      excursion
+        ? schema.required("Excursion name is required when excursion is true")
+        : schema.notRequired().nullable()
+    ),
+});
 
 export const reservationsByDateSchema = yup.object({
   date: yup.string().required().notInPast("Date cannot be in the past"),
+});
+
+export const reservationUpdateSchema = yup.object({
+  reservationId: yup.string().required(),
 });
