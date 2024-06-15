@@ -1,4 +1,3 @@
-import { updateOrderTransactionId } from "@/controllers/order";
 import { authenticateToken } from "@/middlewares/token";
 import { transactionSchema } from "@/yup/transaction";
 import { NextRequest, NextResponse } from "next/server";
@@ -10,8 +9,6 @@ export async function POST(req: NextRequest) {
     const { orderId, transactionId } = await transactionSchema.validate(
       await req.json()
     );
-
-    await updateOrderTransactionId(orderId, uid, transactionId);
 
     return NextResponse.json({ success: "Order has been updated" });
   } catch (e: any) {
