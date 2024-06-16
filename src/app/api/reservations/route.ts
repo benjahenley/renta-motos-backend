@@ -2,6 +2,11 @@ import { getReservationsByDate } from "@/controllers/reservation";
 import { reservationsByDateSchema } from "@/yup/reservation";
 import { NextRequest, NextResponse } from "next/server";
 
+function parseDate(dateString: string) {
+  const [day, month, year] = dateString.split("-");
+  return new Date(`${year}-${month}-${day}T00:00:00`);
+}
+
 //GET RESERVATIONS BY DATE
 export async function GET(request: NextRequest) {
   try {

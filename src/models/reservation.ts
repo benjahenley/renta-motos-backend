@@ -171,10 +171,39 @@ export class Reservation {
     const reservations = collection.where("date", "==", date);
     const reservationData = await reservations.get();
 
-    const items = reservationData.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const items = reservationData.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        data: data.date,
+        adults: data.adults,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        expirationDate: data.expirationDate,
+        status: data.status,
+      };
+    });
+
+    return items;
+  }
+
+  static async getByUserUid(uid: string) {
+    console.log({ uid });
+    const reservations = collection.where("userId", "==", uid);
+    const reservationData = await reservations.get();
+
+    const items = reservationData.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        data: data.date,
+        adults: data.adults,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        expirationDate: data.expirationDate,
+        status: data.status,
+      };
+    });
 
     return items;
   }
@@ -197,6 +226,7 @@ export class Reservation {
 
     return reservations;
   }
+
   static async removeReservation(reservationId: string) {
     try {
       const reservationDocRef = collection.doc(reservationId);

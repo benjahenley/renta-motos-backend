@@ -5,7 +5,6 @@ import {
 } from "@/controllers/reservation";
 import { getOneHourExpirationDate } from "@/helpers/getDate";
 import { authenticateToken } from "@/middlewares/token";
-
 import {
   mainReservationSchema,
   reservationUpdateSchema,
@@ -28,9 +27,7 @@ function handleError(e: any) {
 export async function POST(request: NextRequest) {
   try {
     const userId = await authenticateToken(request);
-
     const requestData = await request.json();
-    console.log("Request Data: ", requestData);
 
     const { adults, excursion, startTime, endTime, excursionName, date } =
       await mainReservationSchema.validate(requestData, {

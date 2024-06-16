@@ -30,6 +30,11 @@ export async function getReservationsByDate(date: string) {
   return hit;
 }
 
+export async function getReservationsByUserUid(uid: string) {
+  const hit = await Reservation.getByUserUid(uid);
+  return hit;
+}
+
 export async function getAllReservations() {
   const hits = await Reservation.getAll();
   return hits;

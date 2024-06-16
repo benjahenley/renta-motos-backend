@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
     const reservations = await getAllReservations();
 
-    return NextResponse.json({ reservations });
+    return NextResponse.json(reservations);
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }

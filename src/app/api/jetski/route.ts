@@ -3,13 +3,12 @@ import { authenticateToken } from "@/middlewares/token";
 import { jetskiSchema } from "@/yup/jetski";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PATCH(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   try {
     await authenticateToken(req);
+    console.log(req);
 
-    const { jetskiId } = await jetskiSchema.validate(await req.json(), {
-      abortEarly: false,
-    });
+    const { jetskiId } = await req.json();
 
     const jetskis = await toggleAvailable(jetskiId);
     return NextResponse.json({ jetskis });

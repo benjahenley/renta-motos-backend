@@ -16,9 +16,19 @@ export class Jetski {
     this.ref.update(this.data);
   }
 
-  static async getAvailableJetskis(): Promise<number> {
-    const jetskisSnap = await collection.where("available", "==", true).get();
-    return jetskisSnap.size;
+  static async getAvailableJetskis(): Promise<any[]> {
+    const jetskisSnap = await collection.get();
+
+    if (jetskisSnap.empty) {
+      throw new Error("No Available Jetskis found");
+    }
+
+    const data: any[] = [];
+    jetskisSnap.forEach((doc) => {
+      data.push({ id: doc.id, ...doc.data() });
+    });
+
+    return data;
   }
 
   static async checkIfExists(jetskiId: string) {

@@ -126,11 +126,54 @@ const reservationSchema = yup.object().shape({
   jetskiId: yup.string().required(),
 });
 
+const timeSchema = yup
+  .string()
+  .matches(/^([01]\d|2[0-3]):([0-5]\d)$/, "Time must be in HH:mm format")
+  .test("is-before-1800", "Time must not be later than 18:00", (value) => {
+    if (!value) return false;
+    const [hours, minutes] = value.split(":").map(Number);
+    return hours < 18 || (hours === 18 && minutes === 0);
+  });
+
+const dateSchema = yup
+  .string()
+  .required("Date is required")
+  .test("is-not-past", "Date must not be in the past", (value) => {
+    if (!value) return false;
+    const inputDate = new Date(value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return inputDate >= today;
+  });
+
 export const mainReservationSchema = yup.object({
-  date: yup.string().required(),
+  date: dateSchema,
   adults: yup.number().required(),
-  startTime: yup.string().required(),
-  endTime: yup.string().required(),
+  startTime: timeSchema.required("Start time is required"),
+  endTime: timeSchema
+    .required("End time is required")
+    .test(
+      "is-after-start-time",
+      "End time must be at least 30 minutes after start time",
+      function (value) {
+        const { startTime } = this.parent;
+        if (!value || !startTime) return false;
+
+        const [startHours, startMinutes] = startTime.split(":").map(Number);
+        const [endHours, endMinutes] = value.split(":").map(Number);
+
+        const startDate = new Date();
+        startDate.setHours(startHours, startMinutes);
+
+        const endDate = new Date();
+        endDate.setHours(endHours, endMinutes);
+
+        const timeDifference =
+          (endDate.getTime() - startDate.getTime()) / 60000;
+
+        return timeDifference >= 30;
+      }
+    ),
   excursion: yup.boolean().required(),
   excursionName: yup
     .string()
@@ -139,7 +182,7 @@ export const mainReservationSchema = yup.object({
         "margaritas",
         "cala-salada",
         "cala-bassa",
-        "cala-daubarca",
+        "cala-ubarca",
         "portixol",
         "esvedra",
       ],
@@ -154,6 +197,10 @@ export const mainReservationSchema = yup.object({
 
 export const reservationsByDateSchema = yup.object({
   date: yup.string().required().notInPast("Date cannot be in the past"),
+});
+
+export const reservationsByUidSchema = yup.object({
+  uid: yup.string().required(),
 });
 
 export const reservationUpdateSchema = yup.object({
