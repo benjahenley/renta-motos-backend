@@ -28,7 +28,7 @@ export class Reservation {
     const { date, startTime, endTime, excursion, excursionName, adults } = data;
 
     try {
-      const availableJetskis = await Jetski.getAvailableJetskis();
+      const availableJetskis: any = await Jetski.getAvailableJetskis();
       const instances = await collection.where("date", "==", date).get();
 
       if (instances.empty) {
