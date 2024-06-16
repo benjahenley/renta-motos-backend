@@ -196,7 +196,7 @@ export class Reservation {
       const data = doc.data();
       return {
         id: doc.id,
-        data: data.date,
+        date: data.date,
         adults: data.adults,
         startTime: data.startTime,
         endTime: data.endTime,
