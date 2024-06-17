@@ -78,24 +78,65 @@ export async function PATCH(request: NextRequest) {
 //DELETE RESERVATION
 export async function DELETE(req: NextRequest) {
   try {
+    console.log("delete");
+
     const uid = await authenticateToken(req);
 
     const { searchParams } = new URL(req.url);
     const reservationId = searchParams.get("id");
 
     if (!reservationId) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: "reservationId is required" },
         { status: 400 }
       );
+      response.headers.set(
+        "Access-Control-Allow-Origin",
+        "http://localhost:3000"
+      );
+      response.headers.set(
+        "Access-Control-Allow-Methods",
+        "GET,OPTIONS,PATCH,POST,DELETE"
+      );
+      response.headers.set(
+        "Access-Control-Allow-Headers",
+        "Authorization, Content-Type"
+      );
+      return response;
     }
 
     await deleteReservation(reservationId);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: "Successfully removed reservation from database",
     });
+    response.headers.set(
+      "Access-Control-Allow-Origin",
+      "http://localhost:3000"
+    );
+    response.headers.set(
+      "Access-Control-Allow-Methods",
+      "GET,OPTIONS,PATCH,POST,DELETE"
+    );
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "Authorization, Content-Type"
+    );
+    return response;
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    const response = NextResponse.json({ error: e.message }, { status: 500 });
+    response.headers.set(
+      "Access-Control-Allow-Origin",
+      "http://localhost:3000"
+    );
+    response.headers.set(
+      "Access-Control-Allow-Methods",
+      "GET,OPTIONS,PATCH,POST,DELETE"
+    );
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "Authorization, Content-Type"
+    );
+    return response;
   }
 }
