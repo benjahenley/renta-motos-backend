@@ -97,6 +97,12 @@ export class Reservation {
     }
   }
 
+  static async getById(reservationId: string) {
+    const reservationRef = collection.doc(reservationId);
+    const reservationSnap = await reservationRef.get();
+    return reservationSnap.data();
+  }
+
   static async createReservation(reservationData: ReservationInputData) {
     try {
       const newReservationRef = collection.doc();

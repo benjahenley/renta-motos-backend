@@ -40,6 +40,11 @@ export async function getAllReservations() {
   return hits;
 }
 
+export async function getReservationById(reservationId: string) {
+  const hits = await Reservation.getById(reservationId);
+  return hits;
+}
+
 export async function deleteReservation(reservationId: string) {
   await Reservation.removeReservation(reservationId);
 

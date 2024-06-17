@@ -179,12 +179,13 @@ export const mainReservationSchema = yup.object({
     .string()
     .oneOf(
       [
-        "margaritas",
+        "isla-margarita",
         "cala-salada",
-        "cala-bassa",
+        "cala-comte",
         "cala-ubarca",
         "portixol",
-        "esvedra",
+        "isla-es-vedra",
+        "listing-1",
       ],
       "Excursion name must be one of the predefined values"
     )

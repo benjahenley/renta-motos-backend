@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = await authenticateToken(request);
     const requestData = await request.json();
+    console.log(requestData);
 
     const { adults, excursion, startTime, endTime, excursionName, date } =
       await mainReservationSchema.validate(requestData, {
