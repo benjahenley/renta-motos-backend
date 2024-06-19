@@ -14,3 +14,8 @@ export async function toggleAvailable(jetskiId: string) {
   const jetski = await Jetski.toggleAvailable(jetskiId);
   return jetski;
 }
+
+export async function createNewJetski(name: string) {
+  const jetski = await Jetski.createNewJetski(name);
+  return jetski;
+}

@@ -88,22 +88,16 @@ export class Jetski {
     }
   }
 
-  static async addReservation(reservation: any) {
-    const jetskiRef = collection.doc(reservation.data.jetskiId);
-    if (!jetskiRef) {
-      throw new Error("there is no Jetski with that ID");
+  static async createNewJetski(name: string) {
+    try {
+      const jetskiRef = collection.doc();
+      const data = {
+        available: true,
+        name,
+      };
+      return await jetskiRef.set(data);
+    } catch (error: any) {
+      throw new Error("Error creating new Jetski:", error);
     }
-
-    const jetski = new Jetski(jetskiRef.id);
-    await jetski.pull();
-
-    if (!jetski.data.reservations) {
-      jetski.data.reservations = [];
-    }
-
-    jetski.data.reservations.push(reservation.id);
-
-    await jetski.push();
-    return;
   }
 }
