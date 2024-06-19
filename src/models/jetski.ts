@@ -68,7 +68,8 @@ export class Jetski {
 
       const jetskiData = jetskiDoc.data();
       const available = jetskiData!.available;
-      return await jetskiRef.update({ available: !available });
+      await jetskiRef.update({ available: !available });
+      return true;
     } catch (error: any) {
       console.error(
         `Error toggling availability for jetski ${jetskiId}:`,
