@@ -1,4 +1,4 @@
-export type Status = "pending" | "confirmed" | "cancelled";
+export type Status = "pending" | "approved" | "cancelled";
 export interface ReservationInputData {
   date: string;
   userId: string;

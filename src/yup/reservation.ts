@@ -200,6 +200,10 @@ export const reservationsByDateSchema = yup.object({
   date: yup.string().required().notInPast("Date cannot be in the past"),
 });
 
+export const patchReservationSchema = yup.object({
+  status: yup.string().oneOf(["approved", "cancelled", "pending"]).required(),
+});
+
 export const reservationsByUidSchema = yup.object({
   uid: yup.string().required(),
 });

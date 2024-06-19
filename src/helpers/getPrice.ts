@@ -15,22 +15,22 @@ export const getPrice = (reservationData: any) => {
   let unitPrice = 0;
 
   if (excursion) {
-    if (excursionName === "margaritas") {
+    if (excursionName === "isla-margarita") {
       unitPrice = 180;
     }
     if (excursionName === "cala-salada") {
       unitPrice = 120;
     }
-    if (excursionName === "cala-bassa") {
+    if (excursionName === "cala-comte") {
       unitPrice = 180;
     }
-    if (excursionName === "cala-daubarca") {
+    if (excursionName === "cala-ubarca") {
       unitPrice = 250;
     }
     if (excursionName === "portixol") {
       unitPrice = 300;
     }
-    if (excursionName === "esvedra") {
+    if (excursionName === "isla-es-vedra") {
       unitPrice = 300;
     }
   } else {

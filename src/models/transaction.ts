@@ -16,12 +16,22 @@ export class Transaction {
     this.ref.update(this.data);
   }
 
-  static async createTransaction(transactionId: string, orderId: string) {
+  static async createTransaction(transactionId: string, reservationId: string) {
     const instance = collection.doc();
     const transactionSnap = new Transaction(instance.id);
+
     transactionSnap.data = {
       id: transactionId,
-      orderId: orderId,
+      reservationId: reservationId,
+      createdAt: new Date().toISOString(),
     };
+
+    try {
+      await instance.set(transactionSnap.data);
+      return transactionSnap.data;
+    } catch (error) {
+      console.error("Error creating transaction:", error);
+      throw new Error("Unable to create transaction");
+    }
   }
 }

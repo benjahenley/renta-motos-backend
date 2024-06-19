@@ -16,16 +16,31 @@ export class Jetski {
     this.ref.update(this.data);
   }
 
-  static async getAvailableJetskis(): Promise<any[]> {
+  static async getAllJetskis(): Promise<any[]> {
     const jetskisSnap = await collection.get();
 
     if (jetskisSnap.empty) {
-      throw new Error("No Available Jetskis found");
+      throw new Error("No Jetskis found");
     }
 
     const data: any[] = [];
     jetskisSnap.forEach((doc) => {
       data.push({ id: doc.id, ...doc.data() });
+    });
+
+    return data;
+  }
+
+  static async getAvailableJetskis(): Promise<any[]> {
+    const jetskisSnap = await collection.where("available", "==", true).get();
+
+    if (jetskisSnap.empty) {
+      throw new Error("No Jetskis found");
+    }
+
+    const data: any[] = [];
+    jetskisSnap.forEach((doc) => {
+      data.push(doc.id);
     });
 
     return data;

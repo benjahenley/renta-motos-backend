@@ -1,4 +1,4 @@
-import { ReservationInputData } from "@/interfaces/reservation";
+import { ReservationInputData, Status } from "@/interfaces/reservation";
 import { Jetski } from "@/models/jetski";
 import { Reservation } from "@/models/reservation";
 import { User } from "@/models/user";
@@ -15,9 +15,13 @@ export async function createReservation(data: ReservationInputData) {
   }
 }
 
-export async function updateReservation(userId: string, reservationId: string) {
+export async function changeStatus(
+  reservationId: string,
+  uid: string,
+  status: Status
+) {
   try {
-    await Reservation.changeReservationsToApproved(userId, reservationId);
+    await Reservation.changeStatus(reservationId, uid, status);
 
     return true;
   } catch (e: unknown) {

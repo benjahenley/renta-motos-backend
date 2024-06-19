@@ -1,7 +1,7 @@
 import { firestore } from "../lib/firestore";
 
 import { User } from "./user";
-import { ReservationInputData } from "@/interfaces/reservation";
+import { ReservationInputData, Status } from "@/interfaces/reservation";
 import { Jetski } from "./jetski";
 import { getPrice } from "@/helpers/getPrice";
 import add30Minutes from "@/helpers/add30Minutes";
@@ -103,6 +103,75 @@ export class Reservation {
     return reservationSnap.data();
   }
 
+  static async changeStatus(
+    reservationId: string,
+    uid: string,
+    status: Status
+  ) {
+    const reservationRef = collection.doc(reservationId);
+
+    try {
+      const reservationSnap = await reservationRef.get();
+      if (!reservationSnap.exists) {
+        throw new Error("Reservation not found");
+      }
+
+      const reservationData = reservationSnap.data();
+      if (!reservationData) {
+        throw new Error("Failed to retrieve reservation data");
+      }
+
+      const expirationDate = reservationData.expirationDate;
+      if (!expirationDate) {
+        throw new Error("Expiration date not set for the reservation");
+      }
+
+      if (status === "approved") {
+        const currentDate = new Date();
+        if (new Date(expirationDate) < currentDate) {
+          throw new Error("Reservation has expired");
+        }
+      }
+
+      if (reservationData.userId !== uid) {
+        throw new Error("User ID does not match");
+      }
+
+      // Update the reservation with approved status
+      await reservationRef.update({
+        status,
+      });
+
+      const updatedReservationSnap = await reservationRef.get();
+      return updatedReservationSnap.data();
+    } catch (error: any) {
+      console.error("Error updating reservation status:", error);
+      throw new Error(error.message);
+    }
+  }
+
+  static async addTransactionId(reservationId: string, transactionId: string) {
+    const reservationRef = collection.doc(reservationId);
+
+    try {
+      const reservationSnap = await reservationRef.get();
+      if (!reservationSnap.exists) {
+        throw new Error("Reservation not found");
+      }
+
+      // Update the reservation with transactionId
+      await reservationRef.update({
+        transactionId: transactionId,
+      });
+
+      const updatedReservationSnap = await reservationRef.get();
+      return updatedReservationSnap.data();
+    } catch (error) {
+      console.error("Error updating reservation with transaction ID:", error);
+      throw new Error("Unable to update reservation with transaction ID");
+    }
+  }
+
   static async createReservation(reservationData: ReservationInputData) {
     try {
       const newReservationRef = collection.doc();
@@ -125,54 +194,6 @@ export class Reservation {
     }
   }
 
-  static async changeReservationsToApproved(
-    userId: string,
-    reservationId: string
-  ): Promise<boolean> {
-    try {
-      const reservationRef = collection.doc(reservationId);
-      const reservationDoc = await reservationRef.get();
-
-      if (!reservationDoc.exists) {
-        throw new Error("Reservation not found");
-      }
-
-      const reservationData = reservationDoc.data();
-
-      if (!reservationData) {
-        throw new Error("Reservation is empty");
-      }
-
-      if (reservationData?.userId !== userId) {
-        throw new Error("User ID does not match");
-      }
-
-      await reservationRef.update({ status: "approved" });
-
-      return true;
-    } catch (error) {
-      console.error("Error changing reservation status to approved:", error);
-      throw new Error("Unable to change reservation status to approved");
-    }
-  }
-
-  static async findReservations(reservationIds: string[]) {
-    try {
-      var reservations: object[] = [];
-
-      for (const reservationId of reservationIds) {
-        const reservationData = await collection.doc(reservationId).get();
-        const data = reservationData!.data();
-
-        reservations.push(data!);
-      }
-
-      return reservations;
-    } catch (e: any) {
-      throw new Error(e.message);
-    }
-  }
-
   static async getByDate(date: string) {
     const reservations = collection.where("date", "==", date);
     const reservationData = await reservations.get();
@@ -181,6 +202,8 @@ export class Reservation {
       const data = doc.data();
       return {
         id: doc.id,
+        excursion: data.excursion,
+        excursionName: data.excursionName,
         data: data.date,
         adults: data.adults,
         startTime: data.startTime,
@@ -206,6 +229,9 @@ export class Reservation {
         adults: data.adults,
         startTime: data.startTime,
         endTime: data.endTime,
+        excursionName: data.excursionName,
+        userFullName: data.userFullName,
+        price: data.price,
         expirationDate: data.expirationDate,
         status: data.status,
       };

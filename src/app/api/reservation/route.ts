@@ -1,7 +1,6 @@
 import {
   createReservation,
   deleteReservation,
-  updateReservation,
 } from "@/controllers/reservation";
 import { getOneHourExpirationDate } from "@/helpers/getDate";
 import { authenticateToken } from "@/middlewares/token";
@@ -51,28 +50,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ reservationId });
   } catch (e: unknown) {
     return handleError(e);
-  }
-}
-
-// UPDATE RESERVATION STATUS TO APPROVED
-export async function PATCH(request: NextRequest) {
-  try {
-    const userId = await authenticateToken(request);
-
-    var { reservationId } = await reservationUpdateSchema.validate(
-      await request.json(),
-      {
-        abortEarly: false,
-      }
-    );
-
-    await updateReservation(userId, reservationId);
-
-    return NextResponse.json({
-      message: `Success! Reservation with id ${reservationId} has been approved`,
-    });
-  } catch (e: unknown) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
