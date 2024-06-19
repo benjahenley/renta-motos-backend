@@ -67,18 +67,8 @@ export class Jetski {
       }
 
       const jetskiData = jetskiDoc.data();
-      const currentAvailability = jetskiData!.available;
-
-      const updatedAvailability = !currentAvailability;
-
-      await jetskiRef.update({ available: updatedAvailability });
-
-      const jetskiInstance = new Jetski(jetskiId);
-      await jetskiInstance.pull();
-      jetskiInstance.data.available = updatedAvailability;
-      await jetskiInstance.push();
-
-      return jetskiInstance.data;
+      const available = jetskiData!.available;
+      return await jetskiRef.update({ available: !available });
     } catch (error: any) {
       console.error(
         `Error toggling availability for jetski ${jetskiId}:`,
