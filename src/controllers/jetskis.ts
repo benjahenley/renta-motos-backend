@@ -1,6 +1,7 @@
 import { Jetski } from "@/models/jetski";
 
 export async function getAllJetskis() {
+  console.log("paso 2");
   const jetskis = await Jetski.getAllJetskis();
   return jetskis;
 }

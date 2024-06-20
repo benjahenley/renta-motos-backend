@@ -17,6 +17,7 @@ export class Jetski {
   }
 
   static async getAllJetskis(): Promise<any[]> {
+    console.log("paso 3");
     const jetskisSnap = await collection.get();
 
     if (jetskisSnap.empty) {
