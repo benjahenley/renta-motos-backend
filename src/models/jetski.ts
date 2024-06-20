@@ -24,9 +24,11 @@ export class Jetski {
     }
 
     const data: any[] = [];
-    jetskisSnap.forEach((doc) => {
+    jetskisSnap.docs.forEach((doc) => {
       data.push({ id: doc.id, ...doc.data() });
     });
+
+    console.log(jetskisSnap.docs, jetskisSnap, data);
 
     return data;
   }
