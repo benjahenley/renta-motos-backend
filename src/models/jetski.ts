@@ -57,7 +57,7 @@ export class Jetski {
     return true;
   }
 
-  static async toggleAvailable(jetskiId: string, status: boolean) {
+  static async toggleAvailable(jetskiId: string) {
     try {
       const jetskiRef = collection.doc(jetskiId);
       const jetskiDoc = await jetskiRef.get();
@@ -66,14 +66,18 @@ export class Jetski {
         throw new Error(`Jetski with ID ${jetskiId} does not exist`);
       }
 
-      await jetskiRef.update({ available: status });
+      const status = jetskiDoc.data()!.available;
+      console.log({ status });
+
+      await jetskiRef.update({ available: !status });
       return true;
     } catch (error: any) {
       console.error(
         `Error toggling availability for jetski ${jetskiId}:`,
-        error
+        error.message
       );
-      throw new Error(`Failed to toggle availability: ${error.message}`);
+
+      return false;
     }
   }
 

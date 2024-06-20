@@ -10,8 +10,8 @@ export async function getAvailableJetskis() {
   return jetskis;
 }
 
-export async function toggleAvailable(jetskiId: string, status: boolean) {
-  const jetski = await Jetski.toggleAvailable(jetskiId, status);
+export async function toggleAvailable(jetskiId: string) {
+  const jetski = await Jetski.toggleAvailable(jetskiId);
   return jetski;
 }
 

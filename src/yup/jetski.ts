@@ -6,5 +6,4 @@ export const jetskiSchema = yup.object({
 });
 export const patchJetskiSchema = yup.object({
   jetskiId: yup.string().required(),
-  status: yup.boolean().required(),
 });

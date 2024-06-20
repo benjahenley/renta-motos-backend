@@ -7,10 +7,9 @@ export async function PATCH(req: NextRequest) {
   try {
     await authenticateToken(req);
 
-    const { jetskiId, status } = await patchJetskiSchema.validate(
-      await req.json()
-    );
-    const jetskis = await toggleAvailable(jetskiId, status);
+    const { jetskiId } = await patchJetskiSchema.validate(await req.json());
+
+    const jetskis = await toggleAvailable(jetskiId);
     const response = NextResponse.json({ jetskis });
 
     // response.headers.set("Access-Control-Allow-Origin", "*");
