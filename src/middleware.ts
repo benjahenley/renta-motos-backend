@@ -12,7 +12,6 @@ export function middleware(request: Request) {
         "Access-Control-Allow-Headers": "Authorization, Content-Type",
       },
     });
-    console.log("Handling preflight request");
     return response;
   }
 

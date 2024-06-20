@@ -67,7 +67,11 @@ export class Jetski {
       }
 
       const jetskiData = jetskiDoc.data();
+
       const available = jetskiData!.available;
+
+      console.log(jetskiData!.available);
+
       await jetskiRef.update({ available: !available });
       return true;
     } catch (error: any) {

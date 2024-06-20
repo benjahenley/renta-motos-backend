@@ -7,35 +7,34 @@ export async function PATCH(req: NextRequest) {
     await authenticateToken(req);
 
     const { jetskiId } = await req.json();
-    console.log(jetskiId);
 
     const jetskis = await toggleAvailable(jetskiId);
     const response = NextResponse.json({ jetskis });
 
-    response.headers.set("Access-Control-Allow-Origin", "*");
-    response.headers.set(
-      "Access-Control-Allow-Methods",
-      "GET,OPTIONS,PATCH,POST"
-    );
-    response.headers.set(
-      "Access-Control-Allow-Headers",
-      "Authorization, Content-Type"
-    );
+    // response.headers.set("Access-Control-Allow-Origin", "*");
+    // response.headers.set(
+    //   "Access-Control-Allow-Methods",
+    //   "GET,OPTIONS,PATCH,POST"
+    // );
+    // response.headers.set(
+    //   "Access-Control-Allow-Headers",
+    //   "Authorization, Content-Type"
+    // );
 
     return response;
   } catch (e: any) {
     console.log("Error:", e.message);
     const response = NextResponse.json({ error: e.message }, { status: 500 });
 
-    response.headers.set("Access-Control-Allow-Origin", "*");
-    response.headers.set(
-      "Access-Control-Allow-Methods",
-      "GET,OPTIONS,PATCH,POST"
-    );
-    response.headers.set(
-      "Access-Control-Allow-Headers",
-      "Authorization, Content-Type"
-    );
+    // response.headers.set("Access-Control-Allow-Origin", "*");
+    // response.headers.set(
+    //   "Access-Control-Allow-Methods",
+    //   "GET,OPTIONS,PATCH,POST"
+    // );
+    // response.headers.set(
+    //   "Access-Control-Allow-Headers",
+    //   "Authorization, Content-Type"
+    // );
 
     return response;
   }
