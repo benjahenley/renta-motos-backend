@@ -1,14 +1,16 @@
 import { createNewJetski, toggleAvailable } from "@/controllers/jetskis";
 import { authenticateToken } from "@/middlewares/token";
+import { patchJetskiSchema } from "@/yup/jetski";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(req: NextRequest) {
   try {
     await authenticateToken(req);
 
-    const { jetskiId } = await req.json();
-
-    const jetskis = await toggleAvailable(jetskiId);
+    const { jetskiId, status } = await patchJetskiSchema.validate(
+      await req.json()
+    );
+    const jetskis = await toggleAvailable(jetskiId, status);
     const response = NextResponse.json({ jetskis });
 
     // response.headers.set("Access-Control-Allow-Origin", "*");
@@ -40,16 +42,17 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-export function OPTIONS() {
-  const response = new NextResponse(null, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,POST",
-      "Access-Control-Allow-Headers": "Authorization, Content-Type",
-    },
-  });
-  return response;
-}
+// export function OPTIONS() {
+//   const response = new NextResponse(null, {
+//     headers: {
+//       "Access-Control-Allow-Origin": "*",
+//       "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,POST",
+//       "Access-Control-Allow-Headers": "Authorization, Content-Type",
+//     },
+//   });
+//   return response;
+// }
+
 // Create new JETSKI
 export async function POST(req: NextRequest) {
   try {
