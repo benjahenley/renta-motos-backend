@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    console.log("paso 1");
     const jetskis = await getAllJetskis();
     return NextResponse.json(jetskis);
   } catch (e: unknown) {
