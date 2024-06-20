@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const uid = await authenticateToken(req);
-    console.log(uid);
 
     if (!uid) {
       return NextResponse.json({ error: "No uid found" }, { status: 400 });

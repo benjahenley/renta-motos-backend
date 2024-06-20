@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
   try {
     const userId = await authenticateToken(request);
     const requestData = await request.json();
-    console.log(requestData);
 
     const { adults, excursion, startTime, endTime, excursionName, date } =
       await mainReservationSchema.validate(requestData, {
@@ -56,8 +55,6 @@ export async function POST(request: NextRequest) {
 //DELETE RESERVATION
 export async function DELETE(req: NextRequest) {
   try {
-    console.log("delete");
-
     const uid = await authenticateToken(req);
 
     const { searchParams } = new URL(req.url);
@@ -68,10 +65,7 @@ export async function DELETE(req: NextRequest) {
         { error: "reservationId is required" },
         { status: 400 }
       );
-      response.headers.set(
-        "Access-Control-Allow-Origin",
-        "http://localhost:3000"
-      );
+      response.headers.set("Access-Control-Allow-Origin", "*");
       response.headers.set(
         "Access-Control-Allow-Methods",
         "GET,OPTIONS,PATCH,POST,DELETE"
@@ -88,10 +82,7 @@ export async function DELETE(req: NextRequest) {
     const response = NextResponse.json({
       success: "Successfully removed reservation from database",
     });
-    response.headers.set(
-      "Access-Control-Allow-Origin",
-      "http://localhost:3000"
-    );
+    response.headers.set("Access-Control-Allow-Origin", "*");
     response.headers.set(
       "Access-Control-Allow-Methods",
       "GET,OPTIONS,PATCH,POST,DELETE"
@@ -103,10 +94,7 @@ export async function DELETE(req: NextRequest) {
     return response;
   } catch (e: any) {
     const response = NextResponse.json({ error: e.message }, { status: 500 });
-    response.headers.set(
-      "Access-Control-Allow-Origin",
-      "http://localhost:3000"
-    );
+    response.headers.set("Access-Control-Allow-Origin", "*");
     response.headers.set(
       "Access-Control-Allow-Methods",
       "GET,OPTIONS,PATCH,POST,DELETE"
