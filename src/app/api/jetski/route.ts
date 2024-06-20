@@ -8,6 +8,7 @@ export async function PATCH(req: NextRequest) {
     await authenticateToken(req);
 
     const { jetskiId } = await patchJetskiSchema.validate(await req.json());
+    console.log(jetskiId);
 
     const jetskis = await toggleAvailable(jetskiId);
     const response = NextResponse.json({ jetskis });
